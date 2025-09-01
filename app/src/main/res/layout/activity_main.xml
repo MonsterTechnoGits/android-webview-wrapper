@@ -1,69 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:fitsSystemWindows="true"
+    tools:context=".ui.MainActivity">
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    <!-- Main WebView -->
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Loading Progress Bar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_gravity="top"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="?attr/colorPrimary"
+        android:visibility="gone" />
+
+    <!-- Error Layout -->
+    <LinearLayout
+        android:id="@+id/errorLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/webView_reload">
-        <WebView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/MyWebView"/>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <RelativeLayout
-        android:id="@+id/no_internet_layout"
-        android:visibility="gone"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@android:color/white">
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:background="?attr/colorSurface"
+        android:visibility="gone">
 
         <ImageView
-            android:layout_width="match_parent"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:alpha="0.5"
+            android:src="@drawable/ic_error_outline"
+            android:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/errorTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/no_internet_icon"/>
+            android:layout_marginTop="24dp"
+            android:text="Connection Error"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/errorMessage"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"
-            android:gravity="center">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Oops!"
-                android:textSize="25sp"
-                android:textStyle="bold"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="No Internet Connection"
-                android:textStyle="bold"
-                android:textSize="23sp"/>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Check your network"
-                android:textSize="20sp"/>
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Try Again"
-                android:textAllCaps="false"
-                android:onClick="ReconectWebSite"
-                android:backgroundTint="@color/colorPrimary"
-                android:textColor="@android:color/white"
-                android:layout_marginTop="25dp"
-                android:layout_marginBottom="25dp"/>
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:text="Check your internet connection and try again"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="14sp" />
 
-        </LinearLayout>
-    </RelativeLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/retryButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Retry" />
 
+    </LinearLayout>
 
-</RelativeLayout>
+    <!-- Splash Screen (optional) -->
+    <LinearLayout
+        android:id="@+id/splashLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorPrimary"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@mipmap/ic_launcher"
+            android:scaleType="centerInside" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/app_name"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:indeterminateTint="?attr/colorOnPrimary" />
+
+    </LinearLayout>
+
+</FrameLayout>

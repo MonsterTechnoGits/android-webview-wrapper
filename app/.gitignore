@@ -1,1 +1,27 @@
+# App-specific build outputs
 /build
+/release
+
+# Generated APK files
+*.apk
+*.aab
+
+# Debug outputs
+/src/debug
+/src/androidTest/debug
+/src/test/debug
+
+# Local test results
+/build/reports/
+/build/test-results/
+/build/jacoco/
+
+# WebView cache and debugging
+/src/main/assets/debug/
+/src/main/assets/cache/
+
+# Sensitive configuration files
+# Uncomment these if you have sensitive data in your assets
+# /src/main/assets/config/production/
+# /src/main/assets/keys/
+# /src/main/res/raw/api_keys*

@@ -1,3 +1,42 @@
 <resources>
-    <string name="app_name">WebView 2020</string>
+    <string name="app_name">WebView Wrapper</string>
+    
+    <!-- Error Messages -->
+    <string name="connection_error">Connection Error</string>
+    <string name="retry">Retry</string>
+    <string name="no_internet">No Internet Connection</string>
+    <string name="page_not_found">Page Not Found</string>
+    <string name="server_error">Server Error</string>
+    
+    <!-- Loading Messages -->
+    <string name="loading">Loading…</string>
+    <string name="please_wait">Please wait</string>
+    
+    <!-- File Operations -->
+    <string name="download_started">Download started</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_failed">Download failed</string>
+    <string name="file_chooser_not_available">File chooser not available</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_needed">Camera permission needed</string>
+    <string name="storage_permission_needed">Storage permission needed</string>
+    <string name="location_permission_needed">Location permission needed</string>
+    
+    <!-- Notifications -->
+    <string name="media_notification_title">Media Playing</string>
+    <string name="download_notification_title">Download in Progress</string>
+    
+    <!-- Biometric -->
+    <string name="biometric_prompt_title">Authenticate</string>
+    <string name="biometric_prompt_subtitle">Use your fingerprint to authenticate</string>
+    <string name="biometric_prompt_description">Touch the fingerprint sensor</string>
+    <string name="biometric_error_hw_unavailable">Biometric hardware unavailable</string>
+    <string name="biometric_error_user_cancel">Authentication cancelled</string>
+    
+    <!-- General -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 </resources>

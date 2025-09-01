@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196F3" id="theme-color">
+    <title>Theme Adaptation Demo</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --background-color: #ffffff;
+            --text-color: #000000;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), #1976D2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .control-panel {
+            background: rgba(33, 150, 243, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .theme-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-button:hover {
+            opacity: 0.8;
+        }
+        
+        .color-picker {
+            margin: 10px;
+        }
+        
+        .color-picker input {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        /* Dark theme styles */
+        body.dark-mode {
+            --background-color: #121212;
+            --text-color: #ffffff;
+        }
+        
+        .dark-mode .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .demo-content {
+            background: rgba(33, 150, 243, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .status {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: inline-block;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            background: rgba(76, 175, 80, 0.1);
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .external-link {
+            color: #FF9800;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .external-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Auto Theme Adaptation Demo</h1>
+        <p>Watch the status bar adapt to the website theme!</p>
+    </div>
+    
+    <div class="control-panel">
+        <h2>Theme Controls</h2>
+        <p>Change the theme and watch the status bar adapt automatically:</p>
+        
+        <button class="theme-button" onclick="setLightTheme()">☀️ Light Theme</button>
+        <button class="theme-button" onclick="setDarkTheme()">🌙 Dark Theme</button>
+        <button class="theme-button" onclick="setRedTheme()">🔴 Red Theme</button>
+        <button class="theme-button" onclick="setGreenTheme()">🟢 Green Theme</button>
+        <button class="theme-button" onclick="setPurpleTheme()">🟣 Purple Theme</button>
+        
+        <br><br>
+        
+        <div class="color-picker">
+            <label for="customColor">Custom Theme Color: </label>
+            <input type="color" id="customColor" value="#2196F3" onchange="setCustomTheme(this.value)">
+        </div>
+    </div>
+    
+    <div class="demo-content">
+        <h2>✨ How It Works</h2>
+        <div class="status">Status Bar adapts automatically!</div>
+        
+        <p>The WebView wrapper automatically detects:</p>
+        <ul class="feature-list">
+            <li>🔍 <strong>Theme Colors:</strong> Reads <code>meta[name="theme-color"]</code></li>
+            <li>🎨 <strong>CSS Variables:</strong> Detects <code>--primary-color</code>, <code>--accent-color</code></li>
+            <li>🌙 <strong>Dark Mode:</strong> Auto-detects from background color brightness</li>
+            <li>📱 <strong>System Theme:</strong> Respects device dark/light mode changes</li>
+        </ul>
+        
+        <h3>🔗 External Links Test</h3>
+        <p>These links will open in Chrome Custom Tabs:</p>
+        <a href="https://www.google.com" class="external-link">Google (External)</a> | 
+        <a href="https://github.com" class="external-link">GitHub (External)</a> | 
+        <a href="https://stackoverflow.com" class="external-link">Stack Overflow (External)</a>
+        
+        <h3>📋 Current Theme Info</h3>
+        <div id="themeInfo">
+            <p><strong>Theme Color:</strong> <span id="currentTheme">#2196F3</span></p>
+            <p><strong>Mode:</strong> <span id="currentMode">Light</span></p>
+            <p><strong>Background:</strong> <span id="currentBg">#ffffff</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateThemeInfo() {
+            const themeColor = document.querySelector('meta[name="theme-color"]').content;
+            const isDark = document.body.classList.contains('dark-mode');
+            const bgColor = getComputedStyle(document.body).backgroundColor;
+            
+            document.getElementById('currentTheme').textContent = themeColor;
+            document.getElementById('currentMode').textContent = isDark ? 'Dark' : 'Light';
+            document.getElementById('currentBg').textContent = bgColor;
+        }
+        
+        function setTheme(color, isDark = false) {
+            document.documentElement.style.setProperty('--primary-color', color);
+            document.querySelector('meta[name="theme-color"]').content = color;
+            
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                document.documentElement.style.setProperty('--background-color', '#121212');
+                document.documentElement.style.setProperty('--text-color', '#ffffff');
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.documentElement.style.setProperty('--background-color', '#ffffff');
+                document.documentElement.style.setProperty('--text-color', '#000000');
+            }
+            
+            updateThemeInfo();
+            
+            // Small delay to ensure DOM updates are complete
+            setTimeout(() => {
+                // Trigger a small DOM change to ensure WebView detects the theme change
+                document.body.style.opacity = '0.99';
+                setTimeout(() => {
+                    document.body.style.opacity = '1';
+                }, 10);
+            }, 100);
+        }
+        
+        function setLightTheme() {
+            setTheme('#2196F3', false);
+        }
+        
+        function setDarkTheme() {
+            setTheme('#1976D2', true);
+        }
+        
+        function setRedTheme() {
+            setTheme('#F44336', false);
+        }
+        
+        function setGreenTheme() {
+            setTheme('#4CAF50', false);
+        }
+        
+        function setPurpleTheme() {
+            setTheme('#9C27B0', false);
+        }
+        
+        function setCustomTheme(color) {
+            setTheme(color, false);
+        }
+        
+        // Initialize
+        updateThemeInfo();
+        
+        // Listen for system theme changes
+        if (window.matchMedia) {
+            window.matchMedia('(prefers-color-scheme: dark)').addListener(() => {
+                // Re-trigger theme detection after system theme change
+                setTimeout(updateThemeInfo, 500);
+            });
+        }
+    </script>
+</body>
+</html>

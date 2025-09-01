@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4CAF50">
+    <title>My WebView App</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --background-color: #ffffff;
+            --text-color: #333333;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin: 0 0 15px 0;
+            font-size: 1.3rem;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .cta-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 30px;
+            background: linear-gradient(45deg, var(--primary-color), #45a049);
+            border-radius: 15px;
+            color: white;
+        }
+        
+        .cta-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+        
+        .links-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+        
+        .external-link {
+            color: #FF5722;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: 500;
+        }
+        
+        .external-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Welcome to Your App</h1>
+            <p>A powerful WebView wrapper with modern features</p>
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>🎨 Auto Theme</h3>
+                <p>Status bar automatically adapts to your website's theme colors and dark/light mode</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔗 Smart Links</h3>
+                <p>Internal links stay in app, external links open in Chrome Custom Tabs</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📱 Native Features</h3>
+                <p>JavaScript bridge, file uploads, biometric auth, notifications, and more</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>⚡ High Performance</h3>
+                <p>Hardware acceleration, modern WebView APIs, and optimized for speed</p>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <h2>🎯 Ready to Get Started?</h2>
+            <p>Customize this app by editing the TARGET_WEBSITE_URL in AppConfig.java</p>
+            <a href="#" class="cta-button" onclick="showDemo()">View Demo</a>
+            <a href="file:///android_asset/theme-demo.html" class="cta-button">Theme Demo</a>
+            <br><br>
+            <h3>🧪 Status Bar Tests</h3>
+            <button class="cta-button" onclick="testStatusBar('#FF0000')">Test Red</button>
+            <button class="cta-button" onclick="testStatusBar('#00FF00')">Test Green</button>
+            <button class="cta-button" onclick="testStatusBar('#0000FF')">Test Blue</button>
+            <button class="cta-button" onclick="changeTheme('#9C27B0')">Purple Theme</button>
+        </div>
+        
+        <div class="links-section">
+            <h3>External Links (Open in Custom Tabs):</h3>
+            <a href="https://developer.android.com" class="external-link">Android Docs</a> |
+            <a href="https://github.com" class="external-link">GitHub</a> |
+            <a href="https://stackoverflow.com" class="external-link">Stack Overflow</a>
+        </div>
+    </div>
+    
+    <script>
+        function showDemo() {
+            alert('This is your WebView app! 🎉\n\nFeatures:\n• Auto theme adaptation\n• JavaScript bridge\n• File management\n• And much more!');
+        }
+        
+        function testStatusBar(color) {
+            console.log('Testing status bar color:', color);
+            
+            // Try calling Android method directly if available
+            if (typeof AndroidBridge !== 'undefined' && AndroidBridge.testStatusBarColor) {
+                AndroidBridge.testStatusBarColor(color);
+            } else {
+                console.log('AndroidBridge not available, trying alternative method');
+            }
+            
+            // Also update the theme-color meta tag
+            changeTheme(color);
+        }
+        
+        function changeTheme(color) {
+            console.log('Changing theme to:', color);
+            
+            // Update CSS variables
+            document.documentElement.style.setProperty('--primary-color', color);
+            
+            // Update meta theme-color
+            let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            if (!themeColorMeta) {
+                themeColorMeta = document.createElement('meta');
+                themeColorMeta.name = 'theme-color';
+                document.head.appendChild(themeColorMeta);
+            }
+            themeColorMeta.content = color;
+            
+            // Force a small DOM change to trigger WebView theme detection
+            document.body.style.opacity = '0.99';
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+                
+                // Log current theme info
+                console.log('Theme updated:', {
+                    themeColor: themeColorMeta.content,
+                    primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                    backgroundColor: getComputedStyle(document.body).backgroundColor
+                });
+            }, 50);
+        }
+        
+        // Log some info to demonstrate JavaScript bridge
+        console.log('WebView App loaded successfully!');
+        
+        // Check if Android bridge is available
+        if (typeof AndroidBridge !== 'undefined') {
+            console.log('Android Bridge is available!', AndroidBridge);
+        } else {
+            console.log('Android Bridge not available');
+        }
+        
+        // Test theme detection after page loads
+        setTimeout(() => {
+            console.log('Page fully loaded, current theme info:', {
+                themeColor: document.querySelector('meta[name="theme-color"]')?.content,
+                primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color'),
+                backgroundColor: getComputedStyle(document.body).backgroundColor,
+                textColor: getComputedStyle(document.body).color
+            });
+        }, 1000);
+    </script>
+</body>
+</html>
