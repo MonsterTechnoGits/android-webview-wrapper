@@ -12,14 +12,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.view.View;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,14 +51,15 @@ public class MainActivity extends AppCompatActivity implements
     // UI Components
     private WebView webView;
     private ProgressBar progressBar;
-    private LinearLayout errorLayout;
-    private LinearLayout splashLayout;
-    private TextView errorTitle, errorMessage;
+    private ScrollView errorLayout;
+    private FrameLayout splashLayout;
+    private TextView errorTitle, errorMessage, errorCode;
     
     // Managers
     private WebViewManager webViewManager;
     private PermissionManager permissionManager;
     private ThemeManager themeManager;
+    private JavaScriptBridge jsBridge;
     
     // File chooser
     private ValueCallback<Uri[]> filePathCallback;
@@ -62,32 +67,46 @@ public class MainActivity extends AppCompatActivity implements
     
     // Media control receiver
     private BroadcastReceiver mediaControlReceiver;
+
+    // True while a retry load is in progress — suppresses WebView flash on onPageLoadStarted
+    private boolean isRetrying = false;
+    // True while splash is showing — WebView stays hidden until onPageLoadFinished
+    private boolean isSplashing = false;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         // Enable edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        
+
         setContentView(R.layout.activity_main);
-        
+
         initializeManagers();
         initializeUI();
         setupWebView();
         setupEventListeners();
-        
+
         if (AppConfig.isMediaNotificationsEnabled()) {
             registerMediaReceiver();
         }
-        
-        // Show splash screen if enabled
-        if (AppConfig.SHOW_SPLASH_SCREEN) {
-            showSplashScreen();
-        } else {
-            loadTargetWebsite();
+
+        // If the activity was recreated by a DayNight mode change (savedInstanceState != null)
+        // the WebView already has a page loaded — re-inject the theme observer immediately
+        // rather than waiting for onPageLoadFinished which won't fire again.
+        if (savedInstanceState != null && themeManager != null) {
+            webView.post(() -> themeManager.injectThemeObserver());
         }
-        
+
+        // Show splash screen only on a fresh launch, not after recreation
+        if (savedInstanceState == null) {
+            if (AppConfig.SHOW_SPLASH_SCREEN) {
+                showSplashScreen();
+            } else {
+                loadTargetWebsite();
+            }
+        }
+
         // Handle intent if app was opened with URL
         handleIntent(getIntent());
     }
@@ -105,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements
         splashLayout = findViewById(R.id.splashLayout);
         errorTitle = findViewById(R.id.errorTitle);
         errorMessage = findViewById(R.id.errorMessage);
+        errorCode = findViewById(R.id.errorCode);
         
         // Setup file chooser launcher
         fileChooserLauncher = registerForActivityResult(
@@ -123,13 +143,15 @@ public class MainActivity extends AppCompatActivity implements
     }
     
     private void setupWebView() {
-        webViewManager.setupWebView(webView, this);
-        
-        // Initialize theme manager after WebView setup
+        jsBridge = new JavaScriptBridge(this);
+        webViewManager.setupWebView(webView, this, jsBridge);
+
+        // Initialize theme manager and wire it to the bridge for real-time updates
         if (AppConfig.isAutoThemeAdaptationEnabled()) {
             themeManager = new ThemeManager(this, webView);
+            jsBridge.setThemeManager(themeManager);
         }
-        
+
         // Add JavaScript bridge only if enabled
         if (!AppConfig.isJavaScriptBridgeEnabled()) {
             webView.removeJavascriptInterface("AndroidBridge");
@@ -142,26 +164,37 @@ public class MainActivity extends AppCompatActivity implements
     private void setupEventListeners() {
         // Error layout retry button
         findViewById(R.id.retryButton).setOnClickListener(v -> {
-            hideError();
+            isRetrying = true;
+            errorLayout.setVisibility(View.GONE);
+            // WebView stays GONE until onPageLoadFinished confirms a successful load
             loadTargetWebsite();
         });
+
+        // Open device network settings so the user can fix connectivity
+        findViewById(R.id.openSettingsButton).setOnClickListener(v ->
+            startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS)));
     }
     
     private void showSplashScreen() {
+        isSplashing = true;
         splashLayout.setVisibility(View.VISIBLE);
         webView.setVisibility(View.GONE);
-        
-        // Hide splash after delay
+
+        // After the delay, hide splash and kick off the load.
+        // WebView stays GONE until onPageLoadFinished confirms the page is ready.
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            hideSplashScreen();
+            splashLayout.setVisibility(View.GONE);
             loadTargetWebsite();
         }, AppConfig.SPLASH_DURATION_MS);
     }
-    
+
     private void hideSplashScreen() {
         if (splashLayout != null) {
             splashLayout.setVisibility(View.GONE);
-            webView.setVisibility(View.VISIBLE);
+            // Only reveal WebView here for non-splash paths (e.g. page started mid-session)
+            if (!isSplashing) {
+                webView.setVisibility(View.VISIBLE);
+            }
         }
     }
     
@@ -170,13 +203,64 @@ public class MainActivity extends AppCompatActivity implements
         webView.loadUrl(url);
     }
     
-    private void showError(String title, String message) {
+    private void showError(int webViewErrorCode, String rawDescription) {
+        String[] friendly = friendlyErrorText(webViewErrorCode, rawDescription);
         runOnUiThread(() -> {
             webView.setVisibility(View.GONE);
             errorLayout.setVisibility(View.VISIBLE);
-            errorTitle.setText(title);
-            errorMessage.setText(message);
+            errorTitle.setText(friendly[0]);
+            errorMessage.setText(friendly[1]);
+            if (errorCode != null) {
+                errorCode.setText("Error code: " + rawDescription);
+                errorCode.setVisibility(View.VISIBLE);
+            }
         });
+    }
+
+    private String[] friendlyErrorText(int code, String raw) {
+        switch (code) {
+            case WebViewClient.ERROR_HOST_LOOKUP:
+                return new String[]{
+                    "Can't find this website",
+                    "The website address couldn't be found. This usually means you're not connected to the internet, or the address may have changed."
+                };
+            case WebViewClient.ERROR_CONNECT:
+                return new String[]{
+                    "No internet connection",
+                    "Your device isn't connected to the internet. Please turn on Wi-Fi or mobile data and try again."
+                };
+            case WebViewClient.ERROR_TIMEOUT:
+                return new String[]{
+                    "The page is taking too long",
+                    "The website took too long to respond. It might be busy or your connection is slow. Try again in a moment."
+                };
+            case WebViewClient.ERROR_FAILED_SSL_HANDSHAKE:
+            case WebViewClient.ERROR_BAD_URL:
+                return new String[]{
+                    "Secure connection failed",
+                    "We couldn't open a secure connection to this website. The site's security certificate may be outdated or invalid."
+                };
+            case WebViewClient.ERROR_FILE_NOT_FOUND:
+                return new String[]{
+                    "Page not found",
+                    "The page you're looking for doesn't exist or may have been moved. Try going back and navigating again."
+                };
+            case WebViewClient.ERROR_TOO_MANY_REQUESTS:
+                return new String[]{
+                    "Too many requests",
+                    "You've made too many requests in a short time. Please wait a moment and then try again."
+                };
+            case WebViewClient.ERROR_PROXY_AUTHENTICATION:
+                return new String[]{
+                    "Network access blocked",
+                    "Your network requires a login or proxy authentication before you can access the internet."
+                };
+            default:
+                return new String[]{
+                    "Something went wrong",
+                    "We couldn't load the page. Please check your internet connection and try again. If the problem continues, contact support."
+                };
+        }
     }
     
     private void hideError() {
@@ -272,33 +356,37 @@ public class MainActivity extends AppCompatActivity implements
         runOnUiThread(() -> {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(0);
-            hideError();
-            hideSplashScreen();
+            // During a retry the WebView stays hidden until load succeeds — skip hideError
+            if (!isRetrying) {
+                hideError();
+                hideSplashScreen();
+            }
         });
     }
-    
+
     @Override
     public void onPageLoadFinished(String url) {
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
-            
-            // Adapt theme from website after page loads
+            if (isRetrying || isSplashing) {
+                isRetrying = false;
+                isSplashing = false;
+                webView.setVisibility(View.VISIBLE);
+            }
+
+            // Inject the MutationObserver so theme changes are pushed to us in real time.
+            // Also fires once immediately to sync the status bar on first load.
             if (themeManager != null) {
-                // Small delay to ensure page is fully rendered and scripts executed
-                webView.postDelayed(() -> {
-                    android.util.Log.d("MainActivity", "Page load finished, triggering theme adaptation for URL: " + url);
-                    themeManager.adaptThemeFromWebsite();
-                    
-                    // Additional delay for testing - try again with more time
-                    webView.postDelayed(() -> themeManager.forceThemeDetection(), 2000);
-                }, 1000);
+                themeManager.injectThemeObserver();
             }
         });
     }
-    
+
     @Override
     public void onPageLoadError(String url, int errorCode, String description) {
-        showError("Connection Error", description);
+        isRetrying = false;
+        isSplashing = false;
+        showError(errorCode, description);
         runOnUiThread(() -> {
             progressBar.setVisibility(View.GONE);
         });
