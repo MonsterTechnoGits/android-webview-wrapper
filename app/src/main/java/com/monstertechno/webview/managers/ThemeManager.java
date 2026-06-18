@@ -9,6 +9,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
@@ -19,7 +20,10 @@ public class ThemeManager {
     private Activity activity;
     private WebView webView;
     private WindowInsetsControllerCompat windowInsetsController;
-    
+
+    // Tracks last applied mode so we don't recreate the activity on every notify()
+    private Boolean lastAppliedDark = null;
+
     // Default colors
     private static final int DEFAULT_LIGHT_STATUS_BAR = Color.parseColor("#FFFFFF");
     private static final int DEFAULT_DARK_STATUS_BAR = Color.parseColor("#000000");
@@ -38,19 +42,16 @@ public class ThemeManager {
     }
     
     /**
-     * Setup initial theme based on system settings
+     * Setup initial theme based on system dark/light mode before the page loads.
      */
     private void setupInitialTheme() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Enable edge-to-edge
-            WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
-            
-            // Set initial status bar color - start with a visible color for testing
-            updateStatusBarColor(DEFAULT_ACCENT_COLOR, false);
-            
-            // Log for debugging
-            android.util.Log.d("ThemeManager", "Initial theme setup complete");
-        }
+        WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
+        boolean sysDark = isSystemInDarkMode();
+        lastAppliedDark = sysDark;
+        updateStatusBarColor(
+            sysDark ? DEFAULT_DARK_STATUS_BAR : DEFAULT_LIGHT_STATUS_BAR,
+            !sysDark
+        );
     }
     
     /**
@@ -393,5 +394,183 @@ public class ThemeManager {
     public void forceThemeDetection() {
         android.util.Log.d("ThemeManager", "Forcing theme detection...");
         webView.post(() -> adaptThemeFromWebsite());
+    }
+
+    /**
+     * Apply theme from a JS bridge callback.
+     *
+     * @param isDark        true if the page is in dark mode
+     * @param statusBarColor the resolved status-bar color from the page (hex, rgb, or null)
+     *
+     * Uses statusBarColor when provided (meta theme-color, background, etc.).
+     * Falls back to plain black/white when the page provides no color.
+     * Also drives AppCompatDelegate so DayNight resources (dialogs, error screen)
+     * match — only when the mode actually changes to avoid unnecessary recreation.
+     */
+    public void applyTheme(boolean isDark, String statusBarColor) {
+        // 1. Status bar color
+        int color = (statusBarColor != null && !statusBarColor.isEmpty())
+                ? parseColor(statusBarColor) : 0;
+        if (color != 0) {
+            // Use the page's actual color; derive icon tint from its brightness
+            updateStatusBarColor(color, !isDark);
+        } else {
+            updateStatusBarColor(
+                isDark ? DEFAULT_DARK_STATUS_BAR : DEFAULT_LIGHT_STATUS_BAR,
+                !isDark
+            );
+        }
+
+        // 2. DayNight mode — only flip when it actually changes
+        if (lastAppliedDark == null || lastAppliedDark != isDark) {
+            lastAppliedDark = isDark;
+            int nightMode = isDark
+                    ? AppCompatDelegate.MODE_NIGHT_YES
+                    : AppCompatDelegate.MODE_NIGHT_NO;
+            activity.runOnUiThread(() -> AppCompatDelegate.setDefaultNightMode(nightMode));
+        }
+    }
+
+    /**
+     * Inject a universal theme observer that works on ANY website.
+     *
+     * Detection priority (first match wins):
+     *  1. <meta name="theme-color"> — explicit PWA/site brand color (Google, Twitter, etc.)
+     *  2. data-theme / data-color-scheme / color-scheme attributes on <html> or <body>
+     *  3. Framework dark-mode class on <html> or <body>
+     *     (Tailwind: "dark", Bootstrap: "dark", MUI: "dark", etc.)
+     *  4. Computed background color of <html> / <body> — brightness heuristic
+     *  5. prefers-color-scheme media query — OS-level fallback
+     *
+     * A MutationObserver watches <html> attributes + <head> child-list changes
+     * (for dynamic <meta theme-color> swaps), so any in-page toggle is caught
+     * immediately without polling.
+     */
+    public void injectThemeObserver() {
+        // language=JavaScript
+        String script =
+            "(function() {" +
+            "  if (window.__androidThemeObserverInstalled) return;" +
+            "  window.__androidThemeObserverInstalled = true;" +
+
+            // ── helpers ──────────────────────────────────────────────────────
+            "  function brightness(r, g, b) {" +
+            "    return (r * 299 + g * 587 + b * 114) / 1000;" +
+            "  }" +
+
+            "  function parseRgb(css) {" +
+            "    var m = css.match(/\\d+/g);" +
+            "    return m && m.length >= 3 ? [+m[0], +m[1], +m[2]] : null;" +
+            "  }" +
+
+            "  function isTransparent(css) {" +
+            "    return !css || css === 'transparent' || css === 'rgba(0, 0, 0, 0)';" +
+            "  }" +
+
+            // ── main detector ────────────────────────────────────────────────
+            "  function detect() {" +
+            "    var html = document.documentElement;" +
+            "    var body = document.body;" +
+            "    var isDark = null;" +
+            "    var statusColor = null;" +
+
+            // 1. <meta name="theme-color"> — highest authority, use its color directly
+            "    var meta = document.querySelector('meta[name=\"theme-color\"]');" +
+            "    if (meta && meta.content && meta.content.trim()) {" +
+            "      statusColor = meta.content.trim();" +
+            "      var tmp = document.createElement('div');" +
+            "      tmp.style.color = statusColor;" +
+            "      document.body && document.body.appendChild(tmp);" +
+            "      var mc = parseRgb(window.getComputedStyle(tmp).color);" +
+            "      document.body && document.body.removeChild(tmp);" +
+            "      if (mc) isDark = brightness(mc[0], mc[1], mc[2]) < 128;" +
+            "    }" +
+
+            // 2. data-theme / data-color-scheme / color-scheme / data-mode attributes
+            "    if (isDark === null) {" +
+            "      var els = [html, body];" +
+            "      var attrs = ['data-theme','data-color-scheme','color-scheme','data-mode'];" +
+            "      outer2: for (var ei = 0; ei < els.length; ei++) {" +
+            "        if (!els[ei]) continue;" +
+            "        for (var ai = 0; ai < attrs.length; ai++) {" +
+            "          var val = (els[ei].getAttribute(attrs[ai]) || '').toLowerCase();" +
+            "          if (val.indexOf('dark') !== -1 || val === 'night') { isDark = true; break outer2; }" +
+            "          if (val.indexOf('light') !== -1) { isDark = false; break outer2; }" +
+            "        }" +
+            "      }" +
+            "    }" +
+
+            // 3. Framework class names on <html> or <body>
+            "    if (isDark === null) {" +
+            "      var darkC = ['dark','dark-mode','dark-theme','night-mode','theme-dark','bp4-dark','chakra-ui-dark'];" +
+            "      var lightC = ['light','light-mode','light-theme','theme-light'];" +
+            "      var cls = ((html.className||'') + ' ' + (body ? body.className||'' : '')).toLowerCase();" +
+            "      for (var di = 0; di < darkC.length; di++) { if (cls.indexOf(darkC[di]) !== -1) { isDark = true; break; } }" +
+            "      if (isDark === null) { for (var li = 0; li < lightC.length; li++) { if (cls.indexOf(lightC[li]) !== -1) { isDark = false; break; } } }" +
+            "    }" +
+
+            // 4. Computed background-color — use as statusColor AND derive isDark
+            "    if (isDark === null || statusColor === null) {" +
+            "      var targets = [html, body];" +
+            "      for (var ti = 0; ti < targets.length; ti++) {" +
+            "        if (!targets[ti]) continue;" +
+            "        var bg = window.getComputedStyle(targets[ti]).backgroundColor;" +
+            "        if (!isTransparent(bg)) {" +
+            "          var rgb3 = parseRgb(bg);" +
+            "          if (rgb3) {" +
+            "            if (statusColor === null) statusColor = bg;" +
+            "            if (isDark === null) isDark = brightness(rgb3[0], rgb3[1], rgb3[2]) < 128;" +
+            "            break;" +
+            "          }" +
+            "        }" +
+            "      }" +
+            "    }" +
+
+            // 5. OS prefers-color-scheme fallback
+            "    if (isDark === null) isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;" +
+
+            "    if (typeof AndroidBridge !== 'undefined') {" +
+            "      AndroidBridge.onThemeChanged(!!isDark, statusColor || '');" +
+            "    }" +
+            "  }" +
+
+            // ── observers ────────────────────────────────────────────────────
+            // Watch <html> attribute mutations (class, data-theme, color-scheme, etc.)
+            "  var htmlObserver = new MutationObserver(function() { detect(); });" +
+            "  htmlObserver.observe(document.documentElement, {" +
+            "    attributes: true," +
+            "    attributeFilter: ['class','data-theme','data-color-scheme','color-scheme','data-mode','style']" +
+            "  });" +
+
+            // Watch <head> child-list for dynamic <meta theme-color> injection/removal
+            "  if (document.head) {" +
+            "    var headObserver = new MutationObserver(function(muts) {" +
+            "      for (var i = 0; i < muts.length; i++) {" +
+            "        var nodes = muts[i].addedNodes;" +
+            "        for (var j = 0; j < nodes.length; j++) {" +
+            "          if (nodes[j].nodeName === 'META' && nodes[j].name === 'theme-color') {" +
+            "            detect(); return;" +
+            "          }" +
+            "        }" +
+            "      }" +
+            "    });" +
+            "    headObserver.observe(document.head, { childList: true });" +
+            "  }" +
+
+            // Watch existing <meta theme-color> attribute changes
+            "  var metaEl = document.querySelector('meta[name=\"theme-color\"]');" +
+            "  if (metaEl) {" +
+            "    var metaObserver = new MutationObserver(function() { detect(); });" +
+            "    metaObserver.observe(metaEl, { attributes: true, attributeFilter: ['content'] });" +
+            "  }" +
+
+            // OS dark/light switch
+            "  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', detect);" +
+
+            // Fire immediately on inject
+            "  detect();" +
+            "})();";
+
+        webView.evaluateJavascript(script, null);
     }
 }

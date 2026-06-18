@@ -18,6 +18,7 @@ import com.google.gson.JsonObject;
 import com.monstertechno.webview.managers.BiometricManager;
 import com.monstertechno.webview.managers.NotificationManager;
 import com.monstertechno.webview.managers.FileManager;
+import com.monstertechno.webview.managers.ThemeManager;
 
 import java.util.concurrent.Executor;
 
@@ -28,13 +29,25 @@ public class JavaScriptBridge {
     private BiometricManager biometricManager;
     private NotificationManager notificationManager;
     private FileManager fileManager;
-    
+    private ThemeManager themeManager;
+
     public JavaScriptBridge(Context context) {
         this.context = context;
         this.gson = new Gson();
         this.biometricManager = new BiometricManager(context);
         this.notificationManager = new NotificationManager(context);
         this.fileManager = new FileManager(context);
+    }
+
+    public void setThemeManager(ThemeManager themeManager) {
+        this.themeManager = themeManager;
+    }
+
+    @JavascriptInterface
+    public void onThemeChanged(boolean isDark, String statusBarColor) {
+        if (themeManager != null) {
+            ((Activity) context).runOnUiThread(() -> themeManager.applyTheme(isDark, statusBarColor));
+        }
     }
     
     @JavascriptInterface

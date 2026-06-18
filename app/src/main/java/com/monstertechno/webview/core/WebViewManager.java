@@ -48,6 +48,10 @@ public class WebViewManager {
     }
     
     public WebView setupWebView(WebView webView, Context context) {
+        return setupWebView(webView, context, null);
+    }
+
+    public WebView setupWebView(WebView webView, Context context, JavaScriptBridge bridge) {
         WebSettings settings = webView.getSettings();
         
         // Enable JavaScript and modern web features
@@ -104,7 +108,8 @@ public class WebViewManager {
         webView.setWebChromeClient(new ModernWebChromeClient(context));
         
         // Add JavaScript bridge
-        webView.addJavascriptInterface(new JavaScriptBridge(context), "AndroidBridge");
+        JavaScriptBridge jsBridge = (bridge != null) ? bridge : new JavaScriptBridge(context);
+        webView.addJavascriptInterface(jsBridge, "AndroidBridge");
         
         return webView;
     }

@@ -6,103 +6,13 @@
     android:fitsSystemWindows="true"
     tools:context=".ui.MainActivity">
 
-    <!-- Main WebView -->
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <!-- WebView + progress bar (layout_webview.xml) -->
+    <include layout="@layout/layout_webview" />
 
-    <!-- Loading Progress Bar -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:layout_gravity="top"
-        android:max="100"
-        android:progress="0"
-        android:progressTint="?attr/colorPrimary"
-        android:visibility="gone" />
+    <!-- Error state overlay (layout_error.xml) -->
+    <include layout="@layout/layout_error" />
 
-    <!-- Error Layout -->
-    <LinearLayout
-        android:id="@+id/errorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp"
-        android:background="?attr/colorSurface"
-        android:visibility="gone">
-
-        <ImageView
-            android:layout_width="96dp"
-            android:layout_height="96dp"
-            android:alpha="0.5"
-            android:src="@drawable/ic_error_outline"
-            android:tint="?attr/colorOnSurface" />
-
-        <TextView
-            android:id="@+id/errorTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Connection Error"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface" />
-
-        <TextView
-            android:id="@+id/errorMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:gravity="center"
-            android:text="Check your internet connection and try again"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="14sp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/retryButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Retry" />
-
-    </LinearLayout>
-
-    <!-- Splash Screen (optional) -->
-    <LinearLayout
-        android:id="@+id/splashLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="?attr/colorPrimary"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@mipmap/ic_launcher"
-            android:scaleType="centerInside" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/app_name"
-            android:textColor="?attr/colorOnPrimary"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <ProgressBar
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:indeterminateTint="?attr/colorOnPrimary" />
-
-    </LinearLayout>
+    <!-- Splash screen overlay (layout_splash.xml) -->
+    <include layout="@layout/layout_splash" />
 
 </FrameLayout>
