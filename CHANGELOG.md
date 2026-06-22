@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - `ThemeManager` and `ENABLE_AUTO_THEME_ADAPTATION` config (status bar theming is now handled by the system DayNight theme instead of JS-driven color detection)
 - Legacy `GITHUB_OPTIMIZATION.md`, `GITHUB_TAGS.md`, `GITIGNORE.md` docs
+- Unused dependencies to reduce app size: Room, Navigation, Lifecycle ViewModel/LiveData, Preference, CoordinatorLayout, SwipeRefreshLayout, AndroidX Media, and OkHttp (+ logging interceptor)
 
 ## [1.0.0] - 2025-01-XX
 
