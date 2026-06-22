@@ -16,6 +16,8 @@ public static final String TARGET_WEBSITE_URL = "file:///android_asset/index.htm
 
 - **`index.html`** - Simple welcome page with app features
 - **`theme-demo.html`** - Interactive theme adaptation demo
+- **`demo.html`** - Quick interactive demo of the JavaScript bridge
+- **`bridge-docs.html`** - Full `AndroidBridge` API reference with a live test console for every method
 - **`README.md`** - This documentation file
 
 ## Examples
@@ -27,9 +29,15 @@ public static final String TARGET_WEBSITE_URL = "file:///android_asset/index.htm
 // Load theme demo
 public static final String TARGET_WEBSITE_URL = "file:///android_asset/theme-demo.html";
 
+// Load full JavaScript bridge documentation + live test console
+public static final String TARGET_WEBSITE_URL = "file:///android_asset/bridge-docs.html";
+
 // Load from subfolder
 public static final String TARGET_WEBSITE_URL = "file:///android_asset/app/dashboard.html";
 ```
+
+To try it now, set `TARGET_WEBSITE_URL` in `AppConfig.java` to
+`"file:///android_asset/bridge-docs.html"` and run `./gradlew assembleDebug`.
 
 ## Features Supported
 

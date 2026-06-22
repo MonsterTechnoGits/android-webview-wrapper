@@ -20,26 +20,6 @@ android {
         }
     }
 
-    flavorDimensions += "environment"
-    productFlavors {
-        create("dev") {
-            dimension = "environment"
-            applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev"
-            buildConfigField("String", "TARGET_WEBSITE_URL", "\"https://dev.example.com\"")
-        }
-        create("staging") {
-            dimension = "environment"
-            applicationIdSuffix = ".staging"
-            versionNameSuffix = "-staging"
-            buildConfigField("String", "TARGET_WEBSITE_URL", "\"https://staging.example.com\"")
-        }
-        create("prod") {
-            dimension = "environment"
-            buildConfigField("String", "TARGET_WEBSITE_URL", "\"https://google.com\"")
-        }
-    }
-
     buildTypes {
         release {
             isMinifyEnabled = true
@@ -63,7 +43,6 @@ android {
     buildFeatures {
         viewBinding = true
         dataBinding = true
-        buildConfig = true
     }
     
     packaging {

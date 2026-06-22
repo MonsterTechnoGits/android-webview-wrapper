@@ -40,10 +40,11 @@ This **Android WebView Wrapper** is designed to be simple, fast, secure, and pro
 * Modern Android WebView with 2025 standards
 * Java‑based for maximum compatibility
 * Chrome Custom Tabs for external links
-* JavaScript bridge for native Android features
+* JavaScript bridge for native Android features (fully documented, see below)
 * File upload and download support
 * Biometric authentication (optional)
 * Dark / Light theme auto adaptation
+* One-command package rename script for white-labeling
 * Google Play Store ready
 
 ---
@@ -62,22 +63,47 @@ That’s it — your website is now a native Android application.
 
 ---
 
-## ⚡ Quick Setup (60 Seconds)
+## ⚡ Quick Setup (60 Seconds) — Android Studio
 
-```kotlin
-// Change the prod flavor URL in app/build.gradle.kts
-create("prod") {
-    buildConfigField("String", "TARGET_WEBSITE_URL", "\"https://yourwebsite.com\"")
+1. **File → Open...** and select the cloned `android-webview-wrapper` folder
+2. Wait for Gradle sync to finish (progress bar at the bottom of the window)
+3. Open `app/src/main/java/com/monstertechno/webview/config/AppConfig.java` (press `Shift` twice and type the filename to find it instantly) and change one line:
+   ```java
+   public static final String TARGET_WEBSITE_URL = "https://yourwebsite.com";
+   ```
+4. Click the green **Run ▶** button in the toolbar (or `Shift+F10` / `Ctrl+R`)
+
+Your Android app will build and launch on your selected device/emulator instantly.
+
+Prefer the terminal? Use the **Terminal** tab at the bottom of Android Studio:
+```bash
+./gradlew assembleDebug
+```
+
+For renaming the package, branding (icon/splash), release signing, and Play Store publishing — all with Android Studio's built-in wizards — see [SETUP.md](SETUP.md).
+
+---
+
+## 🌉 JavaScript Bridge (Native ⇄ Web Communication)
+
+This wrapper exposes a native `AndroidBridge` object to every page loaded in the WebView, so your website's JavaScript can call native Android features directly — device info, toasts, vibration, notifications, biometric auth, file download/share, clipboard, and back-press control.
+
+```javascript
+if (typeof AndroidBridge !== 'undefined') {
+  AndroidBridge.showToast('Hello from the web page!');
 }
 ```
 
-```bash
-./gradlew assembleProdDebug
+A full, documented reference with a **live test console for every method** ships in the app's assets:
+[app/src/main/assets/bridge-docs.html](app/src/main/assets/bridge-docs.html)
+
+To open it in the running app, point `TARGET_WEBSITE_URL` at it in `AppConfig.java`:
+
+```java
+public static final String TARGET_WEBSITE_URL = "file:///android_asset/bridge-docs.html";
 ```
 
-Your Android app will be generated instantly.
-
-For renaming the package, branding (icon/splash), release signing, and Play Store publishing, see [SETUP.md](SETUP.md).
+then run `./gradlew assembleDebug` and install it — every button on the page calls the real native bridge live. See `app/src/main/assets/README.md` for the full list of bundled demo/reference pages, and `JavaScriptBridge.java` for the native implementation.
 
 ---
 
@@ -109,6 +135,19 @@ For renaming the package, branding (icon/splash), release signing, and Play Stor
 * Biometric authentication support
 * Hardware‑accelerated WebView
 * Background downloads using WorkManager
+* ProGuard/R8 rules covering the JavaScript bridge and Gson model classes for release builds
+
+---
+
+## 🏗️ White-Labeling
+
+To turn this into your own branded app, rename the Java package and `applicationId` in one step:
+
+```bash
+./scripts/rename-package.sh com.yourcompany.yourapp
+```
+
+Full walkthrough — package rename, branding, signing, versioning, Play Store publishing — in [SETUP.md](SETUP.md).
 
 ---
 

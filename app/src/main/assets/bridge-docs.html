@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<title>AndroidBridge Reference</title>
+<style>
+    :root {
+        --bg: #0f0f1a;
+        --panel: #1a1a2e;
+        --accent: #4cc9f0;
+        --ok: #52d273;
+        --warn: #ffb84c;
+        --danger: #ff5c5c;
+        --text: #e8e8f0;
+        --muted: #9090a8;
+        --code-bg: #11111f;
+    }
+    * { box-sizing: border-box; }
+    body {
+        font-family: -apple-system, Roboto, Segoe UI, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        margin: 0;
+        padding: 16px;
+        line-height: 1.5;
+    }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .subtitle { color: var(--muted); margin: 0 0 20px; font-size: 13px; }
+    .toc {
+        background: var(--panel);
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+    }
+    .toc h2 { font-size: 14px; margin: 0 0 8px; color: var(--accent); }
+    .toc a {
+        display: inline-block;
+        color: var(--text);
+        text-decoration: none;
+        background: rgba(255,255,255,0.06);
+        border-radius: 6px;
+        padding: 4px 10px;
+        margin: 3px;
+        font-size: 12px;
+    }
+    .toc a:active { background: rgba(255,255,255,0.15); }
+    section {
+        background: var(--panel);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 14px;
+    }
+    section h2 {
+        font-size: 16px;
+        margin: 0 0 4px;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .method {
+        border-top: 1px solid rgba(255,255,255,0.08);
+        padding: 12px 0;
+    }
+    .method:first-of-type { border-top: none; padding-top: 8px; }
+    .sig {
+        font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+        background: var(--code-bg);
+        color: var(--ok);
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        overflow-x: auto;
+        display: block;
+        margin: 6px 0;
+    }
+    .desc { font-size: 13px; color: var(--text); margin: 6px 0; }
+    .params { font-size: 12px; color: var(--muted); margin: 4px 0; }
+    .params code { color: var(--accent); }
+    .returns { font-size: 12px; color: var(--muted); }
+    .note {
+        font-size: 12px;
+        background: rgba(255,184,76,0.1);
+        border-left: 3px solid var(--warn);
+        padding: 6px 10px;
+        border-radius: 4px;
+        margin: 6px 0;
+        color: #ffd9a0;
+    }
+    button {
+        background: #2d2d4d;
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        cursor: pointer;
+        margin: 4px 4px 0 0;
+    }
+    button:active { background: #3d3d5d; }
+    .run-row { display: flex; flex-wrap: wrap; gap: 0; margin-top: 8px; }
+    input[type="text"] {
+        background: var(--code-bg);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: var(--text);
+        padding: 7px 10px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        margin: 4px 4px 0 0;
+        flex: 1;
+        min-width: 140px;
+    }
+    .output {
+        font-family: monospace;
+        font-size: 11.5px;
+        background: var(--code-bg);
+        color: var(--accent);
+        border-radius: 6px;
+        padding: 8px 10px;
+        margin-top: 8px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        display: none;
+    }
+    .output.show { display: block; }
+    .badge {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+    }
+    .badge.sync { background: rgba(82,210,115,0.15); color: var(--ok); }
+    .badge.async { background: rgba(76,201,240,0.15); color: var(--accent); }
+    .badge.fire { background: rgba(255,184,76,0.15); color: var(--warn); }
+    .top-link { font-size: 11px; color: var(--muted); text-decoration: none; }
+    footer { text-align: center; color: var(--muted); font-size: 11px; margin-top: 24px; }
+    code.inline {
+        background: var(--code-bg);
+        color: var(--accent);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+</style>
+</head>
+<body>
+
+<h1>AndroidBridge Reference</h1>
+<p class="subtitle">Full documentation + live test console for the native&nbsp;&harr;&nbsp;web JavaScript bridge. Load this page in the app to try every call against the real native implementation.</p>
+
+<div class="toc">
+    <h2>Jump to</h2>
+    <a href="#intro">How it works</a>
+    <a href="#device">Device / App Info</a>
+    <a href="#feedback">Toast / Vibrate</a>
+    <a href="#notifications">Notifications</a>
+    <a href="#biometric">Biometric Auth</a>
+    <a href="#files">Files</a>
+    <a href="#clipboard">Clipboard</a>
+    <a href="#sharing">Share / External Apps</a>
+    <a href="#backpress">Back-press Control</a>
+    <a href="#errors">Error Handling</a>
+</div>
+
+<section id="intro">
+    <h2>&#9881;&#65039; How it works</h2>
+    <p class="desc">
+        The native app injects a Java object named <code class="inline">AndroidBridge</code> into every page's
+        <code class="inline">window</code> via <code class="inline">WebView.addJavascriptInterface()</code>.
+        Once the page has loaded, every method below is callable directly as
+        <code class="inline">AndroidBridge.methodName(...)</code> from any JavaScript on the page &mdash;
+        no script tag or SDK import required.
+    </p>
+    <div class="note">
+        Always guard calls with a check, since <code class="inline">AndroidBridge</code> is undefined when this
+        page is opened in a normal desktop/mobile browser instead of the wrapper app:
+    </div>
+    <span class="sig">if (typeof AndroidBridge !== 'undefined') {
+  AndroidBridge.showToast('Hello!');
+}</span>
+    <p class="desc">
+        Methods come in three shapes:
+        <span class="badge sync">sync</span> returns a value immediately (string/boolean) &mdash;
+        <span class="badge async">async</span> takes a JS callback expression as a string, invoked later by native code &mdash;
+        <span class="badge fire">fire-and-forget</span> returns nothing and just performs an action.
+    </p>
+    <p class="desc">
+        Source: <code class="inline">app/src/main/java/com/monstertechno/webview/bridge/JavaScriptBridge.java</code>.
+        Registered in <code class="inline">WebViewManager.java</code> as <code class="inline">"AndroidBridge"</code>.
+    </p>
+</section>
+
+<section id="device">
+    <h2>&#128241; Device / App Info <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge sync">sync</span>
+        <span class="sig">AndroidBridge.getDeviceInfo() -&gt; String (JSON)</span>
+        <p class="desc">Returns device platform, OS version, SDK level, manufacturer, model, and brand as a JSON string.</p>
+        <p class="returns">Returns: <code class="inline">{"platform":"Android","version":"14","sdk":34,"manufacturer":"Google","model":"Pixel 8","brand":"google"}</code></p>
+        <button onclick="run('getDeviceInfo', () => JSON.parse(AndroidBridge.getDeviceInfo()))">Run</button>
+        <div class="output" id="out-getDeviceInfo"></div>
+    </div>
+
+    <div class="method">
+        <span class="badge sync">sync</span>
+        <span class="sig">AndroidBridge.getAppInfo() -&gt; String (JSON)</span>
+        <p class="desc">Returns this app's package name, versionName, and versionCode.</p>
+        <p class="returns">Returns: <code class="inline">{"packageName":"...","versionName":"1.0","versionCode":1}</code></p>
+        <button onclick="run('getAppInfo', () => JSON.parse(AndroidBridge.getAppInfo()))">Run</button>
+        <div class="output" id="out-getAppInfo"></div>
+    </div>
+
+    <div class="method">
+        <span class="badge sync">sync</span>
+        <span class="sig">AndroidBridge.isFeatureSupported(feature: String) -&gt; boolean</span>
+        <p class="params">Params: <code>feature</code> &mdash; one of <code>"fingerprint"</code>, <code>"camera"</code>, <code>"microphone"</code>, <code>"location"</code>, <code>"vibrator"</code></p>
+        <p class="desc">Checks whether the device hardware/feature is available before you try to use it.</p>
+        <button onclick="run('isFeatureSupported', () => {
+            const features = ['fingerprint','camera','microphone','location','vibrator'];
+            const result = {};
+            features.forEach(f => result[f] = AndroidBridge.isFeatureSupported(f));
+            return result;
+        })">Run (checks all)</button>
+        <div class="output" id="out-isFeatureSupported"></div>
+    </div>
+</section>
+
+<section id="feedback">
+    <h2>&#128227; Toast / Vibrate <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.showToast(message: String): void</span>
+        <p class="desc">Shows a native Android Toast. Always runs on the UI thread internally &mdash; safe to call from any JS context.</p>
+        <div class="run-row">
+            <input type="text" id="toastMsg" value="Hello from the web page!">
+            <button onclick="AndroidBridge.showToast(document.getElementById('toastMsg').value)">Show Toast</button>
+        </div>
+    </div>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.vibrate(milliseconds: int): void</span>
+        <p class="desc">Triggers a one-shot vibration. No-op on devices without a vibrator (already checked internally).</p>
+        <button onclick="AndroidBridge.vibrate(300)">Vibrate 300ms</button>
+    </div>
+</section>
+
+<section id="notifications">
+    <h2>&#128276; Notifications <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.showNotification(title: String, message: String, iconUrl: String): void</span>
+        <p class="params">Params: <code>title</code>, <code>message</code> &mdash; notification text. <code>iconUrl</code> &mdash; remote image URL, pass an empty string for the default app icon.</p>
+        <p class="desc">Posts a system notification through the app's notification channel. Requires the <code class="inline">POST_NOTIFICATIONS</code> runtime permission on Android 13+ (already requested by <code class="inline">PermissionManager</code>).</p>
+        <button onclick="AndroidBridge.showNotification('Hello', 'This is a test notification from the web page', '')">Show Notification</button>
+    </div>
+</section>
+
+<section id="biometric">
+    <h2>&#128272; Biometric Authentication <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge async">async</span>
+        <span class="sig">AndroidBridge.authenticateFingerprint(callback: String): void</span>
+        <p class="params">Params: <code>callback</code> &mdash; a JS function expression as a string, e.g. <code>"function(success, message) { ... }"</code>. Native code invokes it by name after the system biometric prompt resolves.</p>
+        <div class="note">
+            The callback string is evaluated as raw JavaScript by the native layer (<code class="inline">webView.evaluateJavascript()</code>).
+            Only pass a literal function expression &mdash; never interpolate untrusted/remote text into this string, since it executes with full page privileges.
+        </div>
+        <span class="sig">AndroidBridge.authenticateFingerprint(
+  'function(success, message) {' +
+  '  AndroidBridge.showToast(success ? "Auth OK" : "Failed: " + message);' +
+  '}'
+);</span>
+        <button onclick="AndroidBridge.authenticateFingerprint('function(success, message) { AndroidBridge.showToast(success ? \'Auth OK!\' : \'Failed: \' + message); }')">Test Fingerprint Prompt</button>
+        <p class="desc">Check availability first with <code class="inline">isFeatureSupported('fingerprint')</code> before showing a biometric-only UI path.</p>
+    </div>
+</section>
+
+<section id="files">
+    <h2>&#128193; Files <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.downloadFile(url: String, filename: String): void</span>
+        <p class="desc">Downloads a remote file in the background via WorkManager and saves it to the device's Downloads folder. Survives app backgrounding/kill.</p>
+        <div class="run-row">
+            <input type="text" id="dlUrl" value="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf">
+            <button onclick="AndroidBridge.downloadFile(document.getElementById('dlUrl').value, 'bridge-demo.pdf')">Download</button>
+        </div>
+    </div>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.shareFile(filePath: String): void</span>
+        <p class="params">Params: <code>filePath</code> &mdash; an absolute path on local storage (typically one previously downloaded via <code class="inline">downloadFile</code>).</p>
+        <p class="desc">Opens the system share sheet for the given local file via a FileProvider URI.</p>
+    </div>
+</section>
+
+<section id="clipboard">
+    <h2>&#128203; Clipboard <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.setClipboard(text: String): void</span>
+        <div class="run-row">
+            <input type="text" id="clipIn" placeholder="Text to copy...">
+            <button onclick="AndroidBridge.setClipboard(document.getElementById('clipIn').value)">Set Clipboard</button>
+        </div>
+    </div>
+
+    <div class="method">
+        <span class="badge sync">sync</span>
+        <span class="sig">AndroidBridge.getClipboard() -&gt; String</span>
+        <p class="desc">Returns the current plain-text clipboard contents, or an empty string if there's nothing copied.</p>
+        <button onclick="run('getClipboard', () => AndroidBridge.getClipboard())">Get Clipboard</button>
+        <div class="output" id="out-getClipboard"></div>
+    </div>
+</section>
+
+<section id="sharing">
+    <h2>&#127760; Share / External Apps <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.shareText(text: String): void</span>
+        <p class="desc">Opens the system share sheet (<code class="inline">ACTION_SEND</code>) with plain text.</p>
+        <button onclick="AndroidBridge.shareText('Check out this WebView app! 🚀')">Share Text</button>
+    </div>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.openUrl(url: String): void</span>
+        <p class="desc">Opens any URL with <code class="inline">ACTION_VIEW</code>, letting Android route it to the best-matching app (browser, maps, mail client, etc). Unlike normal links inside this WebView, this always leaves the app.</p>
+        <button onclick="AndroidBridge.openUrl('https://www.google.com')">Open Google externally</button>
+    </div>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.openExternalApp(packageName: String): void</span>
+        <p class="params">Params: <code>packageName</code> &mdash; e.g. <code>"com.android.settings"</code>. No-op (silently does nothing) if the package isn't installed.</p>
+        <button onclick="AndroidBridge.openExternalApp('com.android.settings')">Open Android Settings</button>
+    </div>
+</section>
+
+<section id="backpress">
+    <h2>&#11013;&#65039; Back-press Control <a class="top-link" href="#toc">&uarr; top</a></h2>
+
+    <div class="method">
+        <span class="badge fire">fire-and-forget</span>
+        <span class="sig">AndroidBridge.setBackHandled(handled: boolean): void</span>
+        <p class="desc">
+            Lets the web page claim the Android back button/gesture while it has an open modal, drawer,
+            or bottom sheet &mdash; so back closes <em>your</em> overlay instead of navigating WebView history
+            or exiting the app.
+        </p>
+        <ol class="desc" style="margin:6px 0 6px 18px; padding:0;">
+            <li>Call <code class="inline">AndroidBridge.setBackHandled(true)</code> when your overlay opens.</li>
+            <li>Define <code class="inline">window.__onAndroidBack = function() { /* close overlay */ }</code> &mdash; native code calls this when back is pressed while handled.</li>
+            <li>Call <code class="inline">AndroidBridge.setBackHandled(false)</code> when your overlay closes normally.</li>
+        </ol>
+        <span class="sig">let modalOpen = false;
+
+function openModal() {
+  modalOpen = true;
+  AndroidBridge.setBackHandled(true);
+  window.__onAndroidBack = closeModal;
+  // ...show your modal
+}
+
+function closeModal() {
+  modalOpen = false;
+  AndroidBridge.setBackHandled(false);
+  // ...hide your modal
+}</span>
+        <p class="desc">Works with any framework &mdash; there are no required CSS classes or DOM markup conventions, just the two bridge calls plus your own open/close logic.</p>
+        <button onclick="AndroidBridge.setBackHandled(true); window.__onAndroidBack = function(){ AndroidBridge.showToast('Back intercepted! Tap again normally.'); AndroidBridge.setBackHandled(false); }; AndroidBridge.showToast('Back is now intercepted once.');">Simulate: intercept next back press</button>
+    </div>
+</section>
+
+<section id="errors">
+    <h2>&#9888;&#65039; Error Handling <a class="top-link" href="#toc">&uarr; top</a></h2>
+    <p class="desc">
+        Bridge methods don't throw structured errors back to JS &mdash; sync methods that hit an internal
+        exception return a JSON object with an <code class="inline">"error"</code> key (e.g. <code class="inline">getAppInfo()</code>)
+        instead of throwing. Fire-and-forget methods fail silently on the native side if a precondition
+        isn't met (e.g. <code class="inline">openExternalApp</code> with a missing package, or
+        <code class="inline">vibrate</code> on a device with no vibrator).
+    </p>
+    <p class="desc">
+        Always wrap bridge calls in <code class="inline">try/catch</code> when parsing JSON results, and check
+        <code class="inline">typeof AndroidBridge !== 'undefined'</code> before calling anything, since this
+        page (and your real site) may also be opened in a regular browser during development.
+    </p>
+    <span class="sig">function safeCall(fn) {
+  if (typeof AndroidBridge === 'undefined') {
+    console.warn('AndroidBridge not available - not running inside the wrapper app');
+    return null;
+  }
+  try {
+    return fn();
+  } catch (e) {
+    console.error('Bridge call failed:', e);
+    return null;
+  }
+}</span>
+</section>
+
+<footer>
+    AndroidBridge reference &middot; generated for android-webview-wrapper &middot;
+    see <code class="inline">JavaScriptBridge.java</code> for the native implementation
+</footer>
+
+<script>
+    function run(id, fn) {
+        const out = document.getElementById('out-' + id);
+        if (typeof AndroidBridge === 'undefined') {
+            out.textContent = 'AndroidBridge not available — open this page inside the wrapper app to test live.';
+            out.classList.add('show');
+            return;
+        }
+        try {
+            const result = fn();
+            out.textContent = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+        } catch (e) {
+            out.textContent = 'Error: ' + e.message;
+        }
+        out.classList.add('show');
+    }
+</script>
+</body>
+</html>
