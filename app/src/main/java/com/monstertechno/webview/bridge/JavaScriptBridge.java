@@ -18,7 +18,6 @@ import com.google.gson.JsonObject;
 import com.monstertechno.webview.managers.BiometricManager;
 import com.monstertechno.webview.managers.NotificationManager;
 import com.monstertechno.webview.managers.FileManager;
-import com.monstertechno.webview.managers.ThemeManager;
 
 import java.util.concurrent.Executor;
 
@@ -29,7 +28,11 @@ public class JavaScriptBridge {
     private BiometricManager biometricManager;
     private NotificationManager notificationManager;
     private FileManager fileManager;
-    private ThemeManager themeManager;
+
+    // True while the web layer has an open dialog/drawer/sheet that should consume back.
+    // Written from the JS thread via setBackHandled(); read from the UI thread in the
+    // back-press callback — volatile ensures visibility across threads.
+    private volatile boolean backHandledByWeb = false;
 
     public JavaScriptBridge(Context context) {
         this.context = context;
@@ -39,17 +42,26 @@ public class JavaScriptBridge {
         this.fileManager = new FileManager(context);
     }
 
-    public void setThemeManager(ThemeManager themeManager) {
-        this.themeManager = themeManager;
+    /**
+     * Called by the web layer when a dialog, drawer, or bottom sheet opens/closes,
+     * so Android back (button or gesture) can be routed to the web layer instead
+     * of closing the app or navigating WebView history.
+     *
+     * Open:  AndroidBridge.setBackHandled(true)
+     * Close: AndroidBridge.setBackHandled(false)
+     *
+     * While true, back dispatches window.__onAndroidBack() so the page can close
+     * its own overlay (works for any web app/framework — no markup conventions required).
+     */
+    @JavascriptInterface
+    public void setBackHandled(boolean handled) {
+        backHandledByWeb = handled;
     }
 
-    @JavascriptInterface
-    public void onThemeChanged(boolean isDark, String statusBarColor) {
-        if (themeManager != null) {
-            ((Activity) context).runOnUiThread(() -> themeManager.applyTheme(isDark, statusBarColor));
-        }
+    public boolean isBackHandledByWeb() {
+        return backHandledByWeb;
     }
-    
+
     @JavascriptInterface
     public String getDeviceInfo() {
         JsonObject deviceInfo = new JsonObject();

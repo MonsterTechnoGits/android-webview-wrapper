@@ -14,8 +14,8 @@ We love your input! We want to make contributing to this project as easy and tra
 1. **Fork** the repository
 2. **Clone** your fork:
    ```bash
-   git clone https://github.com/yourusername/WebView-App.git
-   cd WebView-App
+   git clone https://github.com/MonsterTechnoGits/android-webview-wrapper.git
+   cd android-webview-wrapper
    ```
 3. **Open** in Android Studio or VS Code
 4. **Create** a feature branch:
@@ -31,7 +31,7 @@ We love your input! We want to make contributing to this project as easy and tra
 
 ## 🐛 Reporting Bugs
 
-We use GitHub issues to track bugs. Report a bug by [opening a new issue](https://github.com/imsumandey/WebView-App/issues/new?template=bug_report.md).
+We use GitHub issues to track bugs. Report a bug by [opening a new issue](https://github.com/MonsterTechnoGits/android-webview-wrapper/issues/new?template=bug_report.md).
 
 **Great Bug Reports** tend to have:
 - A quick summary and/or background
@@ -43,7 +43,7 @@ We use GitHub issues to track bugs. Report a bug by [opening a new issue](https:
 
 ## ✨ Suggesting Features
 
-We use GitHub issues to track feature requests. Suggest a feature by [opening a new issue](https://github.com/imsumandey/WebView-App/issues/new?template=feature_request.md).
+We use GitHub issues to track feature requests. Suggest a feature by [opening a new issue](https://github.com/MonsterTechnoGits/android-webview-wrapper/issues/new?template=feature_request.md).
 
 **Great Feature Requests** include:
 - Clear problem description
@@ -119,7 +119,7 @@ chore: update dependencies
 
 ## 🏷️ Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/imsumandey/WebView-App/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/MonsterTechnoGits/android-webview-wrapper/tags).
 
 - **MAJOR**: Breaking changes
 - **MINOR**: New features (backwards compatible)
@@ -167,9 +167,9 @@ We're especially looking for contributions in:
 ## 🤝 Community
 
 ### Getting Help
-- 💬 **[GitHub Discussions](https://github.com/imsumandey/WebView-App/discussions)** - Ask questions
+- 💬 **[GitHub Discussions](https://github.com/MonsterTechnoGits/android-webview-wrapper/discussions)** - Ask questions
 - 📺 **[YouTube Channel](https://youtube.com/MonsterTechno)** - Video tutorials
-- 🐛 **[Issues](https://github.com/imsumandey/WebView-App/issues)** - Bug reports
+- 🐛 **[Issues](https://github.com/MonsterTechnoGits/android-webview-wrapper/issues)** - Bug reports
 
 ### Code of Conduct
 This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
@@ -190,7 +190,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 **Suman Dey** - [@imsumandey](https://github.com/MonsterTechnoGits) - [www.sumandey.com](https://www.sumandey.com)
 
-**Project Link**: [https://github.com/MonsterTechnoGits/WebView-App](https://github.com/MonsterTechnoGits/WebView-App)
+**Project Link**: [https://github.com/MonsterTechnoGits/android-webview-wrapper](https://github.com/MonsterTechnoGits/android-webview-wrapper)
 
 ---
 

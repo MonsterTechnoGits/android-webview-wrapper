@@ -28,10 +28,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.monstertechno.webview.R;
@@ -41,7 +43,6 @@ import com.monstertechno.webview.core.WebViewManager;
 import com.monstertechno.webview.core.clients.ModernWebChromeClient;
 import com.monstertechno.webview.core.clients.ModernWebViewClient;
 import com.monstertechno.webview.managers.PermissionManager;
-import com.monstertechno.webview.managers.ThemeManager;
 
 public class MainActivity extends AppCompatActivity implements 
         ModernWebViewClient.WebViewListener,
@@ -58,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements
     // Managers
     private WebViewManager webViewManager;
     private PermissionManager permissionManager;
-    private ThemeManager themeManager;
     private JavaScriptBridge jsBridge;
     
     // File chooser
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Enable edge-to-edge
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        applySystemBarTheme();
 
         setContentView(R.layout.activity_main);
 
@@ -86,16 +87,10 @@ public class MainActivity extends AppCompatActivity implements
         initializeUI();
         setupWebView();
         setupEventListeners();
+        setupBackPressHandling();
 
         if (AppConfig.isMediaNotificationsEnabled()) {
             registerMediaReceiver();
-        }
-
-        // If the activity was recreated by a DayNight mode change (savedInstanceState != null)
-        // the WebView already has a page loaded — re-inject the theme observer immediately
-        // rather than waiting for onPageLoadFinished which won't fire again.
-        if (savedInstanceState != null && themeManager != null) {
-            webView.post(() -> themeManager.injectThemeObserver());
         }
 
         // Show splash screen only on a fresh launch, not after recreation
@@ -145,12 +140,6 @@ public class MainActivity extends AppCompatActivity implements
     private void setupWebView() {
         jsBridge = new JavaScriptBridge(this);
         webViewManager.setupWebView(webView, this, jsBridge);
-
-        // Initialize theme manager and wire it to the bridge for real-time updates
-        if (AppConfig.isAutoThemeAdaptationEnabled()) {
-            themeManager = new ThemeManager(this, webView);
-            jsBridge.setThemeManager(themeManager);
-        }
 
         // Add JavaScript bridge only if enabled
         if (!AppConfig.isJavaScriptBridgeEnabled()) {
@@ -315,22 +304,53 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
     
-    @SuppressLint("GestureBackNavigation")
-    @Override
-    public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+    // Back gesture/button: web overlay (dialog/drawer/sheet) → WebView history → exit.
+    // Works for any web app: the page just calls AndroidBridge.setBackHandled(true/false)
+    // when it opens/closes an overlay; no markup or framework conventions are required.
+    private void setupBackPressHandling() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 1. Web layer has an open dialog/drawer/sheet — let JS close it
+                if (jsBridge != null && jsBridge.isBackHandledByWeb()) {
+                    if (webView != null) {
+                        webView.evaluateJavascript(
+                            "typeof window.__onAndroidBack==='function'&&window.__onAndroidBack()", null);
+                    }
+                    return;
+                }
+
+                // 2. WebView has navigable history
+                if (webView != null && webView.canGoBack()) {
+                    webView.goBack();
+                    return;
+                }
+
+                // 3. No history and no open overlay — exit the app
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
     }
     
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (themeManager != null) {
-            themeManager.onConfigurationChanged(newConfig);
-        }
+        applySystemBarTheme();
+    }
+
+    /**
+     * Status bar / nav bar icon contrast follows the device's light/dark setting.
+     * Bar background colors come from the DayNight theme (android:statusBarColor /
+     * android:navigationBarColor in themes.xml + values-night/themes.xml).
+     */
+    private void applySystemBarTheme() {
+        boolean isDarkMode = (getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(!isDarkMode);
+        controller.setAppearanceLightNavigationBars(!isDarkMode);
     }
     
     @Override
@@ -372,12 +392,6 @@ public class MainActivity extends AppCompatActivity implements
                 isRetrying = false;
                 isSplashing = false;
                 webView.setVisibility(View.VISIBLE);
-            }
-
-            // Inject the MutationObserver so theme changes are pushed to us in real time.
-            // Also fires once immediately to sync the status bar on first load.
-            if (themeManager != null) {
-                themeManager.injectThemeObserver();
             }
         });
     }
@@ -478,14 +492,5 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void executeJavaScript(String script) {
         runOnUiThread(() -> webView.evaluateJavascript(script, null));
-    }
-    
-    /**
-     * Test theme color changes - can be called from JavaScript bridge
-     */
-    public void testStatusBarColor(String color) {
-        if (themeManager != null) {
-            themeManager.testThemeColor(color);
-        }
     }
 }

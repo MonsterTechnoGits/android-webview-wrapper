@@ -70,13 +70,6 @@ public class AppConfig {
     public static final boolean ENABLE_BROWSER_NOTIFICATIONS = true;
     
     /**
-     * Enable automatic status bar theme adaptation from website
-     * When enabled, the app will automatically detect website's theme colors
-     * and adapt the status bar color accordingly (dark/light mode + theme colors)
-     */
-    public static final boolean ENABLE_AUTO_THEME_ADAPTATION = true;
-    
-    /**
      * Show splash screen on app start
      */
     public static final boolean SHOW_SPLASH_SCREEN = true;
@@ -265,10 +258,4 @@ public class AppConfig {
         return ENABLE_BROWSER_NOTIFICATIONS;
     }
     
-    /**
-     * Check if auto theme adaptation should be enabled
-     */
-    public static boolean isAutoThemeAdaptationEnabled() {
-        return ENABLE_AUTO_THEME_ADAPTATION;
-    }
 }

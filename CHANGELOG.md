@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - GitHub templates and community files
 - Comprehensive documentation
 - Enhanced README with visual elements
+- Web-driven back press handling via `AndroidBridge.setBackHandled()` so pages can intercept back to close dialogs/drawers/sheets before WebView history or app exit
+- System bar light/dark icon contrast now follows the device's day/night setting
+
+### Changed
+- Replaced `ThemeManager`-based auto status bar theme adaptation with transparent system bars styled via `DayNight` theme + `WindowInsetsControllerCompat`
+- Upgraded Android Gradle Plugin to 9.2.1 and Gradle wrapper to 9.4.1
+
+### Removed
+- `ThemeManager` and `ENABLE_AUTO_THEME_ADAPTATION` config (status bar theming is now handled by the system DayNight theme instead of JS-driven color detection)
+- Legacy `GITHUB_OPTIMIZATION.md`, `GITHUB_TAGS.md`, `GITIGNORE.md` docs
 
 ## [1.0.0] - 2025-01-XX
 
@@ -109,7 +119,7 @@ Found an issue or have a feature request? Please check our [Contributing Guideli
 
 ## Support
 
-For support, please visit our [GitHub Discussions](https://github.com/MonsterTechnoGits/WebView-App/discussions) or check out the [documentation](README.md).
+For support, please visit our [GitHub Discussions](https://github.com/MonsterTechnoGits/android-webview-wrapper/discussions) or check out the [documentation](README.md).
 
 ---
 
