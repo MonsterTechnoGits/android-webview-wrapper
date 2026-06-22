@@ -64,16 +64,20 @@ That’s it — your website is now a native Android application.
 
 ## ⚡ Quick Setup (60 Seconds)
 
-```java
-// Change ONE line in AppConfig.java
-public static final String TARGET_WEBSITE_URL = "https://yourwebsite.com";
+```kotlin
+// Change the prod flavor URL in app/build.gradle.kts
+create("prod") {
+    buildConfigField("String", "TARGET_WEBSITE_URL", "\"https://yourwebsite.com\"")
+}
 ```
 
 ```bash
-./gradlew assembleDebug
+./gradlew assembleProdDebug
 ```
 
 Your Android app will be generated instantly.
+
+For renaming the package, branding (icon/splash), release signing, and Play Store publishing, see [SETUP.md](SETUP.md).
 
 ---
 
@@ -177,9 +181,7 @@ convert website to android app, website to android app github, android webview w
 
 ## 📄 License
 
-MIT License
-
-Copyright (c) 2025 Suman Dey
+[MIT License](LICENSE) — Copyright (c) 2025 Suman Dey ([sumandey.com](https://sumandey.com))
 
 ---
 

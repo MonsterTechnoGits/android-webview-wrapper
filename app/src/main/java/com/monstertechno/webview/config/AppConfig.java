@@ -1,26 +1,33 @@
 package com.monstertechno.webview.config;
 
+import com.monstertechno.webview.BuildConfig;
+
 public class AppConfig {
-    
+
     // ========================================
     // CONFIGURATION - Update these values for your app
     // ========================================
-    
+
     /**
      * The main website URL that this app will wrap
      * ONLY UPDATE THIS URL - Everything else will auto-generate!
-     * 
+     *
+     * Comes from the active product flavor's BuildConfig.TARGET_WEBSITE_URL
+     * (see app/build.gradle.kts -> productFlavors: dev / staging / prod).
+     * Editing the flavor's buildConfigField is the single source of truth;
+     * no other file needs to change to point the app at a different site.
+     *
      * Examples:
      * - "https://www.google.com" -> generates google.com, www.google.com, m.google.com, etc.
      * - "https://github.com" -> generates github.com, www.github.com, m.github.com, etc.
      * - "https://example.com" -> generates example.com, www.example.com, m.example.com, etc.
-     * 
+     *
      * For LOCAL HTML files in assets folder:
      * - "file:///android_asset/index.html" -> loads app/src/main/assets/index.html
      * - "file:///android_asset/theme-demo.html" -> loads app/src/main/assets/theme-demo.html
      * - "file:///android_asset/app/index.html" -> loads app/src/main/assets/app/index.html
      */
-    public static final String TARGET_WEBSITE_URL = "https://google.com";
+    public static final String TARGET_WEBSITE_URL = BuildConfig.TARGET_WEBSITE_URL;
     
     // ========================================
     // AUTO-GENERATED - DO NOT MODIFY BELOW

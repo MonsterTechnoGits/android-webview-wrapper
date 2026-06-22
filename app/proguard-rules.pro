@@ -5,12 +5,24 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep WebView JavaScript bridge - methods annotated with @JavascriptInterface
+# must survive R8 or web JS calls into native code will fail silently in release builds.
+-keepclassmembers class com.monstertechno.webview.bridge.JavaScriptBridge {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keep,allowobfuscation @interface android.webkit.JavascriptInterface
+-keepclassmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+
+# Gson uses reflection to (de)serialize model fields; keep field names intact.
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+-keep class com.google.gson.** { *; }
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
