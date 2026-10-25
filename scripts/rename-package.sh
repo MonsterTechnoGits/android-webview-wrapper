@@ -36,10 +36,10 @@ for SRC_ROOT in app/src/main/java app/src/test/java app/src/androidTest/java; do
 done
 
 # Update package/import declarations in all moved Java files
-find app/src -type f -name "*.java" -print0 | xargs -0 sed -i '' "s/${OLD_PACKAGE//./\\.}/${NEW_PACKAGE}/g"
+find app/src -type f -name "*.java" -print0 | xargs -0 sed -i "s/${OLD_PACKAGE//./\\.}/${NEW_PACKAGE}/g"
 
 # Update namespace and applicationId in build.gradle.kts
-sed -i '' "s/\"${OLD_PACKAGE//./\\.}\"/\"${NEW_PACKAGE}\"/g" app/build.gradle.kts
+sed -i "s/\"${OLD_PACKAGE//./\\.}\"/\"${NEW_PACKAGE}\"/g" app/build.gradle.kts
 
 # Clean up now-empty old package directories
 for SRC_ROOT in app/src/main/java app/src/test/java app/src/androidTest/java; do
